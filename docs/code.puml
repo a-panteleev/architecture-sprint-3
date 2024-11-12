@@ -1,4 +1,4 @@
-@startuml
+@startuml code
 
 allow_mixing
 
@@ -15,9 +15,9 @@ struct Device {
 }
 
 struct DeviceState {
-    Long deviceId
-    class state
-    long timestamp
+    + Long deviceId
+    + class state
+    + Long timestamp
 }
 
 struct DeviceCmd {

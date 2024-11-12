@@ -1,4 +1,4 @@
-@startuml
+@startuml componenets
 title Диаграмма компонент "Теплый дом"
 
 top to bottom direction

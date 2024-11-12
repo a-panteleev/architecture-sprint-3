@@ -1,4 +1,4 @@
-@startuml c1
+@startuml context
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
 title Диаграмма контекста "Теплый дом" - начальное состояние

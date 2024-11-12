@@ -1,4 +1,4 @@
-@startuml
+@startuml containers
 title Диаграмма контейнеров "Теплый дом"
 
 top to bottom direction
