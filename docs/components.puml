@@ -1,0 +1,104 @@
+@startuml
+title Диаграмма компонент "Теплый дом"
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container(ClientApp, "Клиентские приложения", "Мобильный\веб интерфейс")
+
+Container_Boundary(SmartHome, "") {
+  Container_Boundary(GatewayCnt, "") {
+    Container(Gateway, "API Gateway", "Kusk", "Единый шлюз для клиентского трафика")
+    Container(AuthService, "Сервис авторизации\аутентификации", "Обеспечивает управление авторизацией")
+    ContainerDb(AuthServiceDB, "БД сервиса авторизации", "Обеспечивает управление авторизацией")
+    Rel(AuthService, Gateway, "Запросы авторизации\аутентификации")
+    Rel(AuthService, AuthServiceDB, "Чтение\запись")
+    Rel(ClientApp, Gateway, "Внешние запросы")
+  }
+
+  ContainerQueue(Kafka, "Брокер сообщений", "Kafka", "Хранит задания по расписанию для выполнения и телеметрию с девайсов")
+  Rel(Gateway, Kafka, "Храние необходимых данных запросов", "Event sourcing")
+  
+  Container_Boundary(UserManagementCnt, "Управление пользователями") {
+    Container(UserManagement, "Сервис управления пользователями", "Java", "Управляет пользователями")
+    ContainerDb(UserManagementDb, "База данных пользователей", "PostgreSQL", "Хранит профили, настройки пользователей")
+    Rel(UserManagement, UserManagementDb,  "Чтение\запись")
+  }
+  Rel(Gateway, UserManagement, "Маршрутизация запросов управления пользователями")
+
+  Container_Boundary(DeviceManagementCnt, "Управление устройствами") {
+    Container_Boundary(DeviceManagementClientCnt, "Обработка клиентских запросов") {
+        Container(DeviceManagement, "Сервис управления устройствами", "Java", "Хранит конфигурация устройств, управление устройствами по расписанию, отдает телеметрию")
+        ContainerDb(DeviceManagementDb, "База данных устройств", "PostgreSQL", "Хранит данные устройств")
+        Container(DeviceManagementTaskPublisher, "Клиент для публикации задач", "Kafak publisher", "Публикация задач устройств для исполнения")
+        Rel(DeviceManagement, DeviceManagementDb,  "Чтение\запись")
+        Rel(Gateway, DeviceManagement, "Маршрутизация запросов управления устройствами")
+        Rel(DeviceManagement, DeviceManagementTaskPublisher,  "публикация")
+    }
+
+    Container_Boundary(LightManagementCnt, "Обработчик задач управления освещением") {
+        Container(LightManagement, "Протокол управления освещением", "Java", "Управляет устройствами освещения")
+        Container(LightManagementWorker, "Обработчик задач освещения", "Java")
+        ContainerDb(LightManagementDb, "База данный устройств освещения", "PostgreSQL", "Хранит данные устройств освещения")
+        Rel(LightManagement, LightManagementDb,  "Чтение\запись")
+        Rel(LightManagementWorker, LightManagementDb,  "Чтение\запись")
+        Rel(LightManagementWorker, LightManagement,  "Отправка заданий в протокол")
+    }
+    
+    Container_Boundary(HeatingManagementCnt, "Обработчик задач управления освещением") {
+        Container(HeatingManagement, "Протокол управления отоплением", "Java", "Управляет устройствами отопления")
+        Container(HeatingManagementWorker, "Обработчик задач отопления", "Java")
+        ContainerDb(HeatingManagementDb, "База данных устройст отопления", "PostgreSQL", "Хранит данные устройств отопления")
+        Rel(HeatingManagement, HeatingManagementDb, "Чтение\запись")
+        Rel(HeatingManagementWorker, HeatingManagementDb, "Чтение\запись")
+        Rel(HeatingManagementWorker, HeatingManagement, "Отправка заданий в протокол")
+    }
+    
+    Container_Boundary(SurveillanceManagementCnt, "Обработчик задач управления наблюдением") {
+        Container(SurveillanceManagement, "Протокол управления наблюдением", "Java", "Управляет устройствами наблюдения")
+        Container(SurveillanceManagementWorker, "Обработчик задач управления наблюдением", "Java")
+        ContainerDb(SurveillanceManagementDb, "База данных устройств наблюдения", "PostgreSQL", "Хранит данные устройств наблюдения")
+        Rel(SurveillanceManagement, SurveillanceManagementDb, "Чтение\запись")
+        Rel(SurveillanceManagementWorker, SurveillanceManagementDb, "Чтение\запись")
+        Rel(SurveillanceManagementWorker, SurveillanceManagement, "Отправка заданий в протокол")
+    }
+    
+    Container_Boundary(GateManagementCnt, "Обработчик задач управления воротами") {
+        Container(GateManagement, "Протокол управления воротами", "Java", "Управляет автоматическими воротами")
+        Container(GateManagementWorker, "Обработчик задач управления воротами", "Java")
+        ContainerDb(GateManagementDb, "База данных устройств управления воротами", "PostgreSQL", "Хранит данные устройств управления воротами")
+        Rel(GateManagement, GateManagementDb, "Чтение\запись")
+        Rel(GateManagementWorker, GateManagementDb, "Чтение\запись")
+        Rel(GateManagementWorker, GateManagement, "Отправка заданий в протокол")
+    }
+  }
+
+  Container(NotificationManager, "Менеджер клиентских уведомлений", "Java", "Отправляет оповещения клиентам")
+  Rel(Kafka, NotificationManager, "Внешние уведомления")
+}
+
+System_Ext(PushNotificationMessenger, "Внешний сервис доставки уведомлений", "Firebase \ GCM")
+Rel(NotificationManager, PushNotificationMessenger, "отправка уведомлений")
+Rel(PushNotificationMessenger, ClientApp, "отправка уведомлений")
+
+Rel(DeviceManagementTaskPublisher, Kafka, "Создание задач для управления устройствами")
+Rel(Kafka, DeviceManagement, "Чтение телеметрии")
+
+Rel(Kafka, LightManagementWorker, "Чтение задания из брокера")
+Rel(LightManagement, Kafka, "запись телеметрии")
+Rel(Kafka, HeatingManagementWorker, "Чтение задания из брокера")
+Rel(HeatingManagement, Kafka, "запись телеметрии")
+Rel(Kafka, SurveillanceManagementWorker, "Чтение задания из брокера")
+Rel(SurveillanceManagement, Kafka, "запись телеметрии")
+Rel(Kafka, GateManagementWorker, "Чтение задания из брокера")
+Rel(GateManagement, Kafka, "запись телеметрии")
+
+System_Ext(client, "Комплект устройств умного дома", "Подключенные устройства к системе")
+
+Rel(LightManagement, client, "Управление устройством")
+Rel(HeatingManagement, client, "Управление устройством")
+Rel(SurveillanceManagement, client, "Управление устройством")
+Rel(GateManagement, client, "Управление устройством")
+
+@enduml

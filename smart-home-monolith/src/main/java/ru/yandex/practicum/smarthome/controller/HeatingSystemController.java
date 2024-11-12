@@ -20,7 +20,7 @@ import ru.yandex.practicum.smarthome.service.HeatingSystemService;
 @RequiredArgsConstructor
 public class HeatingSystemController {
 
-    private final HeatingSystemService heatingSystemService;
+    private final HeatingSystemService heatingSystemService = null;
 
     private static final Logger logger = LoggerFactory.getLogger(HeatingSystemController.class);
 

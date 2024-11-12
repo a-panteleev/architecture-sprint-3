@@ -1,0 +1,50 @@
+@startchen
+
+entity User {
+    id : Long
+    name : String
+    email : String
+    password : String
+    parameter list is incomplete
+}
+
+entity House {
+    id : Long
+    user_id : Long
+    address : String
+    parameter list is incomplete
+}
+
+entity Device {
+    id : Long
+    type_id : Long
+    house_id : Long
+    status : String
+    parameter list is incomplete
+}
+
+entity DeviceState {
+    deviceId : Long
+    state : String
+    timestamp : Long 
+}
+
+entity DeviceCmd {
+    deviceId : Long
+    eventType : String
+    eventData : String
+}
+
+entity DeviceTelemetry {
+    deviceId : Long
+    dataUrl : String
+    timestamp : Long
+}
+
+User -(1,1)- House 
+House -(1,N)- Device
+Device -(1,N)- DeviceState
+Device -(1,N)- DeviceCmd
+Device -(1,N)- DeviceTelemetry
+
+@endchen

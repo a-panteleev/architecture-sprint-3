@@ -1,0 +1,17 @@
+@startuml c1
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Диаграмма контекста "Теплый дом" - начальное состояние
+
+Person(Admin, "Администратор", "Администратор системы 'Теплый дом'")
+Person(User, "Пользователь", "Клиент системы 'Теплый дом'")
+System(SmartHome, "Сервер", "Приложение управления отоплением (Smart Home Monolith)")
+System_Ext(Devices, "Датчики", "Датчики и реле для управления отоплением (Heating System)")
+
+Rel(Admin, SmartHome, "Установка оборудования", "добавление и настройка датчиков")
+Rel(Admin, Devices, "Установка оборудования", "добавление и настройка датчиков")
+Rel(User, SmartHome, "Проверка температуры", "получает данные с датчиков")
+Rel(User, SmartHome, "Управление отоплением", "включить и отключить отопление")
+Rel(SmartHome, Devices, "Контроль и управление отоплением", "проверка температуры, включение\выключение")
+
+@enduml
