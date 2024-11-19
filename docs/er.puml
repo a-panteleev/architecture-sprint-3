@@ -1,7 +1,7 @@
 @startchen er
 
 entity User {
-    id : Long
+    id : Long <<key>>
     name : String
     email : String
     password : String
@@ -9,14 +9,14 @@ entity User {
 }
 
 entity House {
-    id : Long
-    user_id : Long
+    id : Long <<key>>
+    user_id : Long <<derived>>
     address : String
     parameter list is incomplete
 }
 
 entity DeviceType {
-    id: Long 
+    id: Long <<key>>
     manufacturerName: String
     type: TypeEnum
     modelName: String
@@ -24,48 +24,50 @@ entity DeviceType {
 }
 
 entity Device {
-    id : Long
-    type_id : Long
-    house_id : Long
-    status : DeviceStatusEnum
+    id : Long <<key>>
+    typeId : Long <<derived>>
+    houseId : Long <<derived>>
+    status : DeviceStatusEnum <<multi>>
     parameter list is incomplete
 }
 
 entity DeviceState {
-    deviceId : Long
-    state : String
+    id : Long <<key>>
+    deviceId : Long <<derived>>
+    state : String <<multi>>
     timestamp : Long 
 }
 
 entity DeviceCmd {
+    id : Long <<key>>
     deviceId : Long
     eventType : String
     eventData : String
 }
 
 entity GateManagmentDevice {
-    id: Long
-    device_id: Long
+    id: Long <<key>>
+    deviceId: Long <<derived>>
     config: String
 }
 
 entity GateManagmentDeviceTelemetry {
-    id: Long
-    deviceId : Long
+    id: Long <<key>>
+    deviceId : Long <<derived>>
     metricsName : String
     value: Long
     timestamp : Long
 }
 
 entity SurveillanceManagmentDevice {
-    id: Long
-    device_id: Long
+    id: Long <<key>>
+    deviceId: Long <<derived>>
     config: String
 }
 
 entity SurveillanceManagmentDeviceTelemetry {
-    id: Long
-    deviceId : Long
+    id: Long <<key>>
+    deviceId : Long <<derived>>
     metricsName : String
     value: Long
     timestamp : Long

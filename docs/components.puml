@@ -29,12 +29,16 @@ Container_Boundary(SmartHome, "") {
 
   Container_Boundary(DeviceManagementCnt, "Управление устройствами") {
     Container_Boundary(DeviceManagementClientCnt, "Обработка клиентских запросов") {
-        Container(DeviceManagement, "Сервис управления устройствами", "Java", "Хранит конфигурация устройств, управление устройствами по расписанию, отдает телеметрию")
+        Container(DeviceManagementRequestHandler, "Обработчик клиентских запросов", "Java Sprint Framework", "Реализует весь REST API по взаимодействию с устройствами")        
+        ContainerDb(DeviceManagementCache, "Кеш обработчика клиентских запросов", "Redis", "Хранит готовые ответы клиентам в соответствии с настроенным ttl")        
+        Container(DeviceManagementTelemetryExtractor, "Клиент для чтения и обработки телеметрии устройств", "Java", "Общается с Kafka, по запросу от клиента извлекает и подготавливает для отправки данные телеметрии")
         ContainerDb(DeviceManagementDb, "База данных устройств", "PostgreSQL", "Хранит данные устройств")
-        Container(DeviceManagementTaskPublisher, "Клиент для публикации задач", "Kafak publisher", "Публикация задач устройств для исполнения")
-        Rel(DeviceManagement, DeviceManagementDb,  "Чтение\запись")
-        Rel(Gateway, DeviceManagement, "Маршрутизация запросов управления устройствами")
-        Rel(DeviceManagement, DeviceManagementTaskPublisher,  "публикация")
+        Container(DeviceManagementTaskPublisher, "Клиент для публикации задач", "Java", "Публикация задач устройств для исполнения")
+        Rel(DeviceManagementRequestHandler, DeviceManagementDb,  "Чтение\запись")
+        Rel(Gateway, DeviceManagementRequestHandler, "Маршрутизация запросов управления устройствами")
+        Rel(DeviceManagementRequestHandler, DeviceManagementCache,  "чтение\запись", "tcp Redis")
+        Rel(DeviceManagementRequestHandler, DeviceManagementTelemetryExtractor,  "запрос данных телеметрии", "https")
+        Rel(DeviceManagementRequestHandler, DeviceManagementTaskPublisher,  "публикация")
     }
 
     Container_Boundary(LightManagementCnt, "Обработчик задач управления освещением") {
@@ -72,6 +76,14 @@ Container_Boundary(SmartHome, "") {
         Rel(GateManagementWorker, GateManagementDb, "Чтение\запись")
         Rel(GateManagementWorker, GateManagement, "Отправка заданий в протокол")
     }
+
+    Container_Boundary(DeviceAutomationCnt, "Обработчик задач автоматизации устройств") {
+        Container(DeviceAutomationWorker, "Обработчик сервиса автоматизации", "Java", "чтение задач из брокера и выполнение сценариев")
+        Container(DeviceAutomationTaskPublisher, "Клиент для публикации задач", "Java", "отправка задач в брокер управления устройствами")
+        Container(DeviceAutomationDB, "База данных cервиса автоматизации", "PostgreSQL", "Хранит данные сервиса автоматизации")
+        Rel(DeviceAutomationWorker, DeviceAutomationDB, "Чтение\запись", "tcp")
+        Rel(DeviceAutomationWorker, DeviceAutomationTaskPublisher, "Чтение\запись", "https")
+    }
   }
 
   Container(NotificationManager, "Менеджер клиентских уведомлений", "Java", "Отправляет оповещения клиентам")
@@ -83,7 +95,9 @@ Rel(NotificationManager, PushNotificationMessenger, "отправка уведо
 Rel(PushNotificationMessenger, ClientApp, "отправка уведомлений")
 
 Rel(DeviceManagementTaskPublisher, Kafka, "Создание задач для управления устройствами")
-Rel(Kafka, DeviceManagement, "Чтение телеметрии")
+Rel(DeviceManagementTelemetryExtractor, Kafka, "Чтение телеметрии")
+Rel(Kafka, DeviceAutomationWorker, "Чтение автоматических сценариев управления устройствами")
+Rel(DeviceAutomationTaskPublisher, Kafka, "Публикация задач для управления устройствами")
 
 Rel(Kafka, LightManagementWorker, "Чтение задания из брокера")
 Rel(LightManagement, Kafka, "запись телеметрии")
