@@ -15,11 +15,19 @@ entity House {
     parameter list is incomplete
 }
 
+entity DeviceType {
+    id: Long 
+    manufacturerName: String
+    type: TypeEnum
+    modelName: String
+    version: String
+}
+
 entity Device {
     id : Long
     type_id : Long
     house_id : Long
-    status : String
+    status : DeviceStatusEnum
     parameter list is incomplete
 }
 
@@ -35,16 +43,43 @@ entity DeviceCmd {
     eventData : String
 }
 
-entity DeviceTelemetry {
+entity GateManagmentDevice {
+    id: Long
+    device_id: Long
+    config: String
+}
+
+entity GateManagmentDeviceTelemetry {
+    id: Long
     deviceId : Long
-    dataUrl : String
+    metricsName : String
+    value: Long
     timestamp : Long
 }
 
-User -(1,1)- House 
+entity SurveillanceManagmentDevice {
+    id: Long
+    device_id: Long
+    config: String
+}
+
+entity SurveillanceManagmentDeviceTelemetry {
+    id: Long
+    deviceId : Long
+    metricsName : String
+    value: Long
+    timestamp : Long
+}
+
+
+User -(1,N)- House 
 House -(1,N)- Device
 Device -(1,N)- DeviceState
+Device -(1,1)- DeviceType
 Device -(1,N)- DeviceCmd
-Device -(1,N)- DeviceTelemetry
+GateManagmentDevice -(1,1)- Device
+GateManagmentDevice -(1,N)- GateManagmentDeviceTelemetry
+SurveillanceManagmentDevice -(1,1)- Device
+SurveillanceManagmentDevice -(1,N)- SurveillanceManagmentDeviceTelemetry
 
 @endchen

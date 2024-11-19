@@ -12,65 +12,65 @@ Container(AdminApp, "Приложение администратора", "Веб
 
 Container_Boundary(SmartHome, "") {
   Container(Gateway, "API Gateway", "Kusk", "Единый шлюз для клиентского трафика")
-  Rel(ClientApp, Gateway, "Клиентский протокол")
-  Rel(AdminApp, Gateway, "Протокол администратора")
+  Rel(ClientApp, Gateway, "Клиентский протокол", "https")
+  Rel(AdminApp, Gateway, "Протокол администратора", "https")
  
   Container(AuthService, "Сервис авторизации\аутентификации", "Обеспечивает управление авторизацией")
-  Rel(AuthService, Gateway, "Запросы авторизации\аутентификации")
+  Rel(AuthService, Gateway, "Запросы авторизации\аутентификации", "https")
 
   Container(Kafka, "Брокер сообщений", "Kafka", "Хранит задания по расписанию для выполнения и телеметрию с девайсов")
-  Rel(Gateway, Kafka, "Храние необходимых данных запросов", "Event sourcing")
+  Rel(Gateway, Kafka, "Храние необходимых данных запросов", "Event sourcing", "tcp")
   
   Container_Boundary(UserManagementCnt, "Управление пользователями") {
     Container(UserManagement, "Сервис управления пользователями", "Java", "Управляет пользователями")
     Container(UserManagementDb, "База данных пользователей", "PostgreSQL", "Хранит профили, настройки пользователей")
-    Rel(UserManagement, UserManagementDb,  "Чтение\запись")
+    Rel(UserManagement, UserManagementDb,  "Чтение\запись", "tcp")
   }
-  Rel(Gateway, UserManagement, "Маршрутизация запросов управления пользователями")
+  Rel(Gateway, UserManagement, "Маршрутизация запросов управления пользователями", "https")
 
   Container_Boundary(DeviceManagementCnt, "Управление устройствами") {
     Container(DeviceManagement, "Сервис управления устройствами", "Java", "Хранит конфигурация устройств, управление устройствами по расписанию, отдает телеметрию")
     Container(DeviceManagementDb, "База данных устройств", "PostgreSQL", "Хранит данные устройств")
-    Rel(DeviceManagement, DeviceManagementDb,  "Чтение\запись")
-    Rel(Gateway, DeviceManagement, "Маршрутизация запросов управления устройствами")
+    Rel(DeviceManagement, DeviceManagementDb,  "Чтение\запись", "tcp")
+    Rel(Gateway, DeviceManagement, "Маршрутизация запросов управления устройствами", "https")
     
     Container(LightManagement, "Сервис управления освещением", "Java", "Управляет устройствами освещения")
     Container(LightManagementDb, "База данный устройств освещения", "PostgreSQL", "Хранит данные устройств освещения")
-    Rel(LightManagement, LightManagementDb,  "Чтение\запись")
+    Rel(LightManagement, LightManagementDb,  "Чтение\запись", "tcp")
     
     Container(HeatingManagement, "Сервис управления отоплением", "Java", "Управляет устройствами отопления")
     Container(HeatingManagementDb, "База данных устройст отопления", "PostgreSQL", "Хранит данные устройств отопления")
-    Rel(HeatingManagement, HeatingManagementDb, "Чтение\запись")
+    Rel(HeatingManagement, HeatingManagementDb, "Чтение\запись", "tcp")
     
     Container(SurveillanceManagement, "Сервис управления наблюдением", "Java", "Управляет устройствами наблюдения")
     Container(SurveillanceManagementDb, "База данных устройств наблюдения", "PostgreSQL", "Хранит данные устройств наблюдения")
-    Rel(SurveillanceManagement, SurveillanceManagementDb, "Чтение\запись")
+    Rel(SurveillanceManagement, SurveillanceManagementDb, "Чтение\запись", "tcp")
     
     Container(GateManagement, "Сервис управления воротами", "Java", "Управляет автоматическими воротами")
     Container(GateManagementDb, "База данных устройств управления воротами", "PostgreSQL", "Хранит данные устройств управления воротами")
-    Rel(GateManagement, GateManagementDb, "Чтение\запись")
+    Rel(GateManagement, GateManagementDb, "Чтение\запись", "tcp")
   }
 
   Container(NotificationManager, "Менеджер клиентских уведомлений", "Java", "Отправляет оповещения клиентам")
-  Rel(Kafka, NotificationManager, "Внешние уведомления")
+  Rel(Kafka, NotificationManager, "Внешние уведомления", "tcp")
 }
 
 System_Ext(PushNotificationMessenger, "Внешний сервис доставки уведомлений", "Firebase \ GCM")
-Rel(NotificationManager, PushNotificationMessenger, "отправка уведомлений")
-Rel(PushNotificationMessenger, ClientApp, "отправка уведомлений")
+Rel(NotificationManager, PushNotificationMessenger, "отправка уведомлений", "https")
+Rel(PushNotificationMessenger, ClientApp, "отправка уведомлений", "firebase client messaging")
 
 
-Rel(DeviceManagement, Kafka, "Создание задач для управления устройствами")
-Rel(Kafka, LightManagement, "Чтение задания из брокера, запись телеметрии")
-Rel(Kafka, HeatingManagement, "Чтение задания из брокера, запись телеметрии")
-Rel(Kafka, SurveillanceManagement, "Чтение задания из брокера, запись телеметрии")
-Rel(Kafka, GateManagement, "Чтение задания из брокера, запись телеметрии")
+Rel(DeviceManagement, Kafka, "Создание задач для управления устройствами", "tcp")
+Rel(Kafka, LightManagement, "Чтение задания из брокера, запись телеметрии", "tcp")
+Rel(Kafka, HeatingManagement, "Чтение задания из брокера, запись телеметрии", "tcp")
+Rel(Kafka, SurveillanceManagement, "Чтение задания из брокера, запись телеметрии", "tcp")
+Rel(Kafka, GateManagement, "Чтение задания из брокера, запись телеметрии", "tcp")
 
 System_Ext(client, "Комплект устройств умного дома", "Подключенные устройства к системе")
 
-Rel(LightManagement, client, "Управление устройством")
-Rel(HeatingManagement, client, "Управление устройством")
-Rel(SurveillanceManagement, client, "Управление устройством")
-Rel(GateManagement, client, "Управление устройством")
+Rel(LightManagement, client, "Управление устройством", "SSL/TLS")
+Rel(HeatingManagement, client, "Управление устройством", "SSL/TLS")
+Rel(SurveillanceManagement, client, "Управление устройством", "SSL/TLS")
+Rel(GateManagement, client, "Управление устройством", "SSL/TLS")
 
 @enduml
