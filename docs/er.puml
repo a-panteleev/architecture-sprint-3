@@ -1,0 +1,87 @@
+@startchen er
+
+entity User {
+    id : Long <<key>>
+    name : String
+    email : String
+    password : String
+    parameter list is incomplete
+}
+
+entity House {
+    id : Long <<key>>
+    user_id : Long <<derived>>
+    address : String
+    parameter list is incomplete
+}
+
+entity DeviceType {
+    id: Long <<key>>
+    manufacturerName: String
+    type: TypeEnum
+    modelName: String
+    version: String
+}
+
+entity Device {
+    id : Long <<key>>
+    typeId : Long <<derived>>
+    houseId : Long <<derived>>
+    status : DeviceStatusEnum <<multi>>
+    parameter list is incomplete
+}
+
+entity DeviceState {
+    id : Long <<key>>
+    deviceId : Long <<derived>>
+    state : String <<multi>>
+    timestamp : Long 
+}
+
+entity DeviceCmd {
+    id : Long <<key>>
+    deviceId : Long
+    eventType : String
+    eventData : String
+}
+
+entity GateManagmentDevice {
+    id: Long <<key>>
+    deviceId: Long <<derived>>
+    config: String
+}
+
+entity GateManagmentDeviceTelemetry {
+    id: Long <<key>>
+    deviceId : Long <<derived>>
+    metricsName : String
+    value: Long
+    timestamp : Long
+}
+
+entity SurveillanceManagmentDevice {
+    id: Long <<key>>
+    deviceId: Long <<derived>>
+    config: String
+}
+
+entity SurveillanceManagmentDeviceTelemetry {
+    id: Long <<key>>
+    deviceId : Long <<derived>>
+    metricsName : String
+    value: Long
+    timestamp : Long
+}
+
+
+User -(N,N)- House 
+House -(1,N)- Device
+Device -(1,N)- DeviceState
+Device -(1,1)- DeviceType
+Device -(1,N)- DeviceCmd
+GateManagmentDevice -(1,1)- Device
+GateManagmentDevice -(1,N)- GateManagmentDeviceTelemetry
+SurveillanceManagmentDevice -(1,1)- Device
+SurveillanceManagmentDevice -(1,N)- SurveillanceManagmentDeviceTelemetry
+
+@endchen

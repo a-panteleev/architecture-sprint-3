@@ -1,0 +1,21 @@
+@startuml context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Диаграмма контекста "Теплый дом" - начальное состояние
+
+Person(Admin, "Администратор", "Администратор системы 'Теплый дом'")
+Person(User, "Пользователь", "Клиент системы 'Теплый дом'")
+System(SmartHomeAdminConsole, "Консоль администратора", "Приложение администрирования системы для сотрудников 'Теплый дом'")
+Container_Boundary(SmartHomeCnt, "Серверное окружение 'Теплый дом'") {
+    System(SmartHomeClientApp, "Клиентское приложение", "Приложение для доступа к серверу 'Теплый дом'")
+    Container(SmartHome, "Сервер", "Приложение управления отоплением (Smart Home Monolith)", "Java \ PostgreSQL")
+}
+System_Ext(Devices, "Датчики", "Датчики и реле для управления отоплением (Heating System)")
+
+Rel(Admin, SmartHomeAdminConsole, "Установка оборудования", "добавление и настройка датчиков")
+Rel(User, SmartHomeClientApp, "Проверка температуры\управление отоплением", "получает данные с датчиков\отправка команд управления")
+Rel(SmartHomeAdminConsole, SmartHome, "Протокол управления администратора", "https")
+Rel(SmartHomeClientApp, SmartHome, "Протокол клиентского приложения", "проверка температуры \ управление отоплением", "https")
+Rel(SmartHome, Devices, "Контроль и управление отоплением", "проверка температуры, включение\выключение", "tcp\https")
+
+@enduml

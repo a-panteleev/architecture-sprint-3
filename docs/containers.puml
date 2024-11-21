@@ -1,0 +1,55 @@
+@startuml containers
+title Диаграмма контейнеров "Теплый дом"
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+System(SmartHome, "Окружение системы Тёплый дом")
+
+Container(ClientApp, "Клиентские приложения", "Мобильный\веб интерфейс")
+Container(AdminApp, "Приложение администратора", "Веб интерфейс")
+
+Container_Boundary(SmartHome, "") {
+  Container(Gateway, "API Gateway", "Kusk", "Единый шлюз для клиентского трафика")
+  Rel(ClientApp, Gateway, "Клиентский протокол", "https")
+  Rel(AdminApp, Gateway, "Протокол администратора", "https")
+ 
+  Container(AuthService, "Сервис авторизации\аутентификации", "Обеспечивает управление авторизацией")
+  Rel(AuthService, Gateway, "Запросы авторизации\аутентификации", "https")
+
+  Container(Kafka, "Брокер сообщений", "Kafka", "Хранит задания по расписанию для выполнения и телеметрию с девайсов")
+  Rel(Gateway, Kafka, "Храние необходимых данных запросов", "Event sourcing", "tcp")
+  
+  Container_Boundary(UserManagementCnt, "Управление пользователями") {
+    Container(UserManagement, "Сервис управления пользователями", "Java", "Управляет пользователями")
+    Container(UserManagementDb, "База данных пользователей", "PostgreSQL", "Хранит профили, настройки пользователей")
+    Rel(UserManagement, UserManagementDb,  "Чтение\запись", "tcp")
+  }
+  Rel(Gateway, UserManagement, "Маршрутизация запросов управления пользователями", "https")
+
+  Container_Boundary(DeviceManagementCnt, "Управление устройствами") {
+    Container(DeviceManagement, "Сервис управления устройствами", "Java", "Хранит конфигурация устройств, управление устройствами по расписанию, отдает телеметрию")
+    Container(DeviceManagementDb, "База данных устройств", "PostgreSQL", "Хранит данные устройств")
+    Rel(DeviceManagement, DeviceManagementDb,  "Чтение\запись", "tcp")
+    Rel(Gateway, DeviceManagement, "Маршрутизация запросов управления устройствами", "https")
+    
+    Container(DeviceProtocol, "Сервис управления конечными устройствами", "Java", "Управляет устройствами пользователя (свет\отопление\ворота\видеонаблюдение)")
+    Container(DeviceProtocolDb, "База данный конечных устройств", "PostgreSQL", "Хранит данные конечных устройств")
+    Rel(DeviceProtocol, DeviceProtocolDb,  "Чтение\запись", "tcp")
+    
+    Container(DeviceAutomation, "Сервис автоматизации", "Java", "выполнение автоматических сценариев управления устройствами")
+    Container(DeviceAutomationDB, "База данных cервиса автоматизации", "PostgreSQL", "Хранит данные сервиса автоматизации")
+    Rel(DeviceAutomation, DeviceAutomationDB, "Чтение\запись", "tcp")
+  }
+}
+
+Rel(DeviceManagement, Kafka, "Создание задач для управления устройствами", "tcp")
+Rel(Kafka, DeviceProtocol, "Чтение задания из брокера, запись телеметрии", "tcp")
+Rel(Kafka, DeviceAutomation, "Чтение задания из брокера, запись команд управления устройствами", "tcp")
+
+System_Ext(client, "Комплект устройств умного дома", "Подключенные устройства к системе")
+
+Rel(DeviceProtocol, client, "Управление устройством", "SSL/TLS")
+
+@enduml

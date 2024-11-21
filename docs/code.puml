@@ -1,0 +1,53 @@
+@startuml code
+
+allow_mixing
+
+title Диаграмма кода для обработки задач "Теплый дом"
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+struct Device {
+    + Long id
+    + String name
+    + String metaInfo
+}
+
+struct DeviceState {
+    + Long deviceId
+    + class state
+    + Long timestamp
+}
+
+struct DeviceCmd {
+    + Long deviceId
+    + String eventType
+    + String eventData
+}
+
+class DeviceManager {
+    ` Класс для обработки клиентских команд для работы с устройствами,
+    управляет состоянием устройств, 
+    возвращает url на телеметрию
+    + setupDevice(device: Device): Long
+    + getDeviceState(deviceId: Long): DeviceState
+    + setDeviceState(device: DeviceState): Long
+    + getDeviceTelemetry(deviceId: Long): String
+}
+
+class DeviceManagementTaskPublisher {
+    + publishEvent(event: DeviceCmd): void
+}
+
+DeviceManager --> Device : manipulates
+DeviceManager --> DeviceState : setup
+DeviceManager --> DeviceCmd : creates
+DeviceManager --> DeviceManagementTaskPublisher : sendEvent
+
+ContainerQueue(Kafka, "Брокер сообщений")
+
+DeviceManagementTaskPublisher --> Kafka: публикация команд для исполнения
+Kafka --> DeviceManager: возвращает телеметрию
+
+@enduml
