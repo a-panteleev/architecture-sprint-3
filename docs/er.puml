@@ -74,7 +74,7 @@ entity SurveillanceManagmentDeviceTelemetry {
 }
 
 
-User -(1,N)- House 
+User -(N,N)- House 
 House -(1,N)- Device
 Device -(1,N)- DeviceState
 Device -(1,1)- DeviceType

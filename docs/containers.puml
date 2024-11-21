@@ -34,48 +34,22 @@ Container_Boundary(SmartHome, "") {
     Rel(DeviceManagement, DeviceManagementDb,  "Чтение\запись", "tcp")
     Rel(Gateway, DeviceManagement, "Маршрутизация запросов управления устройствами", "https")
     
-    Container(LightManagement, "Сервис управления освещением", "Java", "Управляет устройствами освещения")
-    Container(LightManagementDb, "База данный устройств освещения", "PostgreSQL", "Хранит данные устройств освещения")
-    Rel(LightManagement, LightManagementDb,  "Чтение\запись", "tcp")
+    Container(DeviceProtocol, "Сервис управления конечными устройствами", "Java", "Управляет устройствами пользователя (свет\отопление\ворота\видеонаблюдение)")
+    Container(DeviceProtocolDb, "База данный конечных устройств", "PostgreSQL", "Хранит данные конечных устройств")
+    Rel(DeviceProtocol, DeviceProtocolDb,  "Чтение\запись", "tcp")
     
-    Container(HeatingManagement, "Сервис управления отоплением", "Java", "Управляет устройствами отопления")
-    Container(HeatingManagementDb, "База данных устройст отопления", "PostgreSQL", "Хранит данные устройств отопления")
-    Rel(HeatingManagement, HeatingManagementDb, "Чтение\запись", "tcp")
-    
-    Container(SurveillanceManagement, "Сервис управления наблюдением", "Java", "Управляет устройствами наблюдения")
-    Container(SurveillanceManagementDb, "База данных устройств наблюдения", "PostgreSQL", "Хранит данные устройств наблюдения")
-    Rel(SurveillanceManagement, SurveillanceManagementDb, "Чтение\запись", "tcp")
-    
-    Container(GateManagement, "Сервис управления воротами", "Java", "Управляет автоматическими воротами")
-    Container(GateManagementDb, "База данных устройств управления воротами", "PostgreSQL", "Хранит данные устройств управления воротами")
-    Rel(GateManagement, GateManagementDb, "Чтение\запись", "tcp")
-
     Container(DeviceAutomation, "Сервис автоматизации", "Java", "выполнение автоматических сценариев управления устройствами")
     Container(DeviceAutomationDB, "База данных cервиса автоматизации", "PostgreSQL", "Хранит данные сервиса автоматизации")
     Rel(DeviceAutomation, DeviceAutomationDB, "Чтение\запись", "tcp")
   }
-
-  Container(NotificationManager, "Менеджер клиентских уведомлений", "Java", "Отправляет оповещения клиентам")
-  Rel(Kafka, NotificationManager, "Внешние уведомления", "tcp")
 }
 
-System_Ext(PushNotificationMessenger, "Внешний сервис доставки уведомлений", "Firebase \ GCM")
-Rel(NotificationManager, PushNotificationMessenger, "отправка уведомлений", "https")
-Rel(PushNotificationMessenger, ClientApp, "отправка уведомлений", "firebase client messaging")
-
-
 Rel(DeviceManagement, Kafka, "Создание задач для управления устройствами", "tcp")
-Rel(Kafka, LightManagement, "Чтение задания из брокера, запись телеметрии", "tcp")
-Rel(Kafka, HeatingManagement, "Чтение задания из брокера, запись телеметрии", "tcp")
-Rel(Kafka, SurveillanceManagement, "Чтение задания из брокера, запись телеметрии", "tcp")
-Rel(Kafka, GateManagement, "Чтение задания из брокера, запись телеметрии", "tcp")
+Rel(Kafka, DeviceProtocol, "Чтение задания из брокера, запись телеметрии", "tcp")
 Rel(Kafka, DeviceAutomation, "Чтение задания из брокера, запись команд управления устройствами", "tcp")
 
 System_Ext(client, "Комплект устройств умного дома", "Подключенные устройства к системе")
 
-Rel(LightManagement, client, "Управление устройством", "SSL/TLS")
-Rel(HeatingManagement, client, "Управление устройством", "SSL/TLS")
-Rel(SurveillanceManagement, client, "Управление устройством", "SSL/TLS")
-Rel(GateManagement, client, "Управление устройством", "SSL/TLS")
+Rel(DeviceProtocol, client, "Управление устройством", "SSL/TLS")
 
 @enduml
